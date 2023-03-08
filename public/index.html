@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat-App</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <section>
+      <header id="title">
+        <h2>Chat-App</h2>
+      </header>
+      <div id="add">
+        <button>
+          <a
+            href="http://localhost:8080"
+            target="_blank"
+            rel="noopener noreferrer"
+            >+</a
+          ></button
+        ><br />
+        <h3>Add User</h3>
+      </div>
+
+      <div>
+        <div id="online-user">
+          <h4 id="list">User's List</h4>
+          <div id="root"></div>
+        </div>
+      </div>
+      <main>
+        <div id="frame">
+          <div id="content">
+            <div id="date">Today</div>
+            <div id="ChatMessage"></div>
+          </div>
+        </div>
+      </main>
+      <footer>
+        <form action="*" id="comment-box">
+          <input
+            type="text"
+            placeholder="Type here...."
+            name="message"
+            id="message-box"
+          />
+          <button type="submit" id="send-text">Send</button>
+        </form>
+      </footer>
+      <script src="http://localhost:8080/socket.io/socket.io.js"></script>
+      <script>
+        const socket = io();
+        const name = prompt("Enter Your name......");
+        const newUser = document.getElementById("root");
+        const messagebox = document.getElementById("message-box");
+        const form = document.getElementById("comment-box");
+        const chat = document.getElementById("ChatMessage");
+        // const time=new Date().toLocaleTimeString();
+
+        socket.emit("user-joined", name);
+        form.addEventListener("submit", (input) => {
+          input.preventDefault();
+          const message = messagebox.value;
+          const usermessager = document.createElement("div");
+          usermessager.innerHTML = `<div class="right-text"><b style="color:green;">You</b> : ${message}</div>`;
+          chat.append(usermessager);
+          socket.emit(`send`, message);
+          messagebox.value = "";
+        });
+
+        socket.on("user-joined-in", (username) => {
+          const existingUser = document.createElement("div");
+          existingUser.innerHTML = `<div><b>${username}</b> is <span style="color:green;">Online</span></div>`;
+          newUser.appendChild(existingUser);
+        });
+        socket.on("reached", (data) => {
+          const usermessage = document.createElement("div");
+          usermessage.innerHTML = `<div class="left-text"><b style="color:blue;">${data.name}</b> : ${data.message}</div>`;
+          chat.append(usermessage);
+        });
+        socket.on("left", (name) => {
+          const existingUser = document.createElement("div");
+          existingUser.innerHTML = `<div><b>${name}</b> is <span style="color:tomato;">Offline</span> </div>`;
+          newUser.appendChild(existingUser);
+        });
+      </script>
+    </section>
+  </body>
+</html>
